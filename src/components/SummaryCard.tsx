@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowUpRight, ArrowDownRight, DollarSign } from 'lucide-react';
+import { DollarSign } from 'lucide-react';
 
 interface SummaryCardProps {
   title: string;

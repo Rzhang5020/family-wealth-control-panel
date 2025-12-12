@@ -1,6 +1,6 @@
 import React from 'react';
-import { FinancialItem, ItemType } from '../types';
-import { Trash2, TrendingUp, TrendingDown, Briefcase, Home, CreditCard, Wallet, Landmark, DollarSign, PieChart } from 'lucide-react';
+import type { FinancialItem, ItemType } from '../types';
+import { Trash2, TrendingUp, TrendingDown, Briefcase, Home, CreditCard, Wallet, Landmark, PieChart } from 'lucide-react';
 
 interface FinancialListProps {
   items: FinancialItem[];

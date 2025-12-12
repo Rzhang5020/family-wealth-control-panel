@@ -1,21 +1,25 @@
 export type ItemType = 'asset' | 'liability';
 
-export enum AssetCategory {
-  RealEstate = 'Real Estate',
-  Stocks = 'Stocks & Bonds',
-  Cash = 'Cash & Equivalents',
-  Business = 'Business Interests',
-  Crypto = 'Crypto Assets',
-  Other = 'Other Assets'
-}
+export const AssetCategory = {
+  RealEstate: 'Real Estate',
+  Stocks: 'Stocks & Bonds',
+  Cash: 'Cash & Equivalents',
+  Business: 'Business Interests',
+  Crypto: 'Crypto Assets',
+  Other: 'Other Assets'
+} as const;
 
-export enum LiabilityCategory {
-  Mortgage = 'Mortgage',
-  Loan = 'Personal/Auto Loan',
-  CreditCard = 'Credit Card Debt',
-  StudentLoan = 'Student Loan',
-  Other = 'Other Liabilities'
-}
+export type AssetCategory = typeof AssetCategory[keyof typeof AssetCategory];
+
+export const LiabilityCategory = {
+  Mortgage: 'Mortgage',
+  Loan: 'Personal/Auto Loan',
+  CreditCard: 'Credit Card Debt',
+  StudentLoan: 'Student Loan',
+  Other: 'Other Liabilities'
+} as const;
+
+export type LiabilityCategory = typeof LiabilityCategory[keyof typeof LiabilityCategory];
 
 export interface NetWorthItem {
   id: string;

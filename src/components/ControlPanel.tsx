@@ -1,5 +1,5 @@
 import React from 'react';
-import { AppSettings } from '../types';
+import type { AppSettings } from '../types';
 import { Settings, RefreshCw } from 'lucide-react';
 
 interface ControlPanelProps {

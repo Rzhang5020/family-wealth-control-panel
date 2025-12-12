@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { FinancialItem, AppSettings, ProjectionData } from '../types';
+import type { FinancialItem, AppSettings, ProjectionData } from '../types';
 import { SummaryCard } from './SummaryCard';
 import { FinancialList } from './FinancialList';
 import { ControlPanel } from './ControlPanel';
@@ -114,7 +114,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                             contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                         />
                         <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                            {aggregatedAssets.map((entry, index) => (
+                            {aggregatedAssets.map((_, index) => (
                                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                             ))}
                         </Bar>

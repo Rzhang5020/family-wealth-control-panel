@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { FinancialItem, AssetCategory, LiabilityCategory, ItemType } from '../types';
+import { AssetCategory, LiabilityCategory } from '../types';
+import type { FinancialItem, ItemType } from '../types';
 import { PlusCircle, X } from 'lucide-react';
 
 interface ItemFormProps {

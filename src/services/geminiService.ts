@@ -1,6 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
-import { FinancialItem, AppSettings } from "../types";
+import type { FinancialItem, AppSettings } from "../types";
 
+// Note: Ensure your build tool injects the API key via process.env.API_KEY or import.meta.env
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const generateFinancialAdvice = async (
