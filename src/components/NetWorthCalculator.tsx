@@ -89,7 +89,7 @@ const NetWorthCalculator: React.FC = () => {
         <div className="mb-6 text-center md:text-left">
             <h2 className="text-2xl font-serif font-bold text-white flex items-center justify-center md:justify-start gap-2">
             <TrendingUp className="w-7 h-7 text-emerald-400" />
-            Family Wealth Control Panel
+            Family Wealth Control Panel™
             </h2>
             <p className="text-slate-400 text-sm mt-1 ml-1">
              Clarity for real-life money decisions
@@ -131,7 +131,7 @@ const NetWorthCalculator: React.FC = () => {
 
       {/* Printable Title for PDF */}
       <div className="hidden print:block p-6 text-center border-b-2 border-slate-900 mb-4">
-        <h1 className="text-3xl font-serif font-bold text-slate-900">Family Wealth Control Panel Report</h1>
+        <h1 className="text-3xl font-serif font-bold text-slate-900">Family Wealth Control Panel™ Report</h1>
         <p className="text-slate-500 text-sm">Generated on {new Date().toLocaleDateString()}</p>
       </div>
 
