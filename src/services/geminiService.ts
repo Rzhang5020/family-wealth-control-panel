@@ -1,6 +1,13 @@
 import { GoogleGenAI } from "@google/genai";
 import type { FinancialItem, AppSettings } from "../types";
 
+// Declare process to satisfy TypeScript in the browser environment
+declare const process: {
+  env: {
+    API_KEY: string;
+  };
+};
+
 // Note: Ensure your build tool injects the API key via process.env.API_KEY or import.meta.env
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 

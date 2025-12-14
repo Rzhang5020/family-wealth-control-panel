@@ -1,6 +1,6 @@
 export type ItemType = 'asset' | 'liability';
 
-export const AssetCategory = {
+export const ASSET_CATEGORIES = {
   RealEstate: 'Real Estate',
   Stocks: 'Stocks & Bonds',
   Cash: 'Cash & Equivalents',
@@ -9,9 +9,9 @@ export const AssetCategory = {
   Other: 'Other Assets'
 } as const;
 
-export type AssetCategory = typeof AssetCategory[keyof typeof AssetCategory];
+export type AssetCategory = typeof ASSET_CATEGORIES[keyof typeof ASSET_CATEGORIES];
 
-export const LiabilityCategory = {
+export const LIABILITY_CATEGORIES = {
   Mortgage: 'Mortgage',
   Loan: 'Personal/Auto Loan',
   CreditCard: 'Credit Card Debt',
@@ -19,7 +19,7 @@ export const LiabilityCategory = {
   Other: 'Other Liabilities'
 } as const;
 
-export type LiabilityCategory = typeof LiabilityCategory[keyof typeof LiabilityCategory];
+export type LiabilityCategory = typeof LIABILITY_CATEGORIES[keyof typeof LIABILITY_CATEGORIES];
 
 export interface NetWorthItem {
   id: string;
@@ -48,4 +48,21 @@ export interface ProjectionData {
   netWorth: number;
   assets: number;
   liabilities: number;
+}
+
+export interface ForecastSettings {
+  startYear: number;
+  phase1Monthly: number | '';
+  phase2Monthly: number | '';
+  phase3Monthly: number | '';
+  annualReturn: number | '';
+  customStages: Record<number, 1 | 2 | 3>; // yearIndex -> stage override
+  customReturns: Record<number, number>; // yearIndex -> specific return rate
+}
+
+export interface ActualRecord {
+  yearIndex: number; // 1, 2, 3...
+  totalAnnual: number | ''; // User direct input
+  eoyBalance: number | '';
+  notes: string;
 }

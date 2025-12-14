@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
-import { NetWorthItem } from '../types';
+import type { NetWorthItem } from '../types';
 import { Plus, Trash2 } from 'lucide-react';
 
 interface NetWorthSnapshotProps {
@@ -15,16 +15,12 @@ const NetWorthSnapshot: React.FC<NetWorthSnapshotProps> = ({ items, setItems, is
   const [newItemType, setNewItemType] = useState<'asset' | 'liability'>('asset');
 
   const handleValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Remove existing commas to check if valid number
     const rawValue = e.target.value.replace(/,/g, '');
-    
     if (rawValue === '') {
         setNewItemValue('');
         return;
     }
-
     if (!isNaN(Number(rawValue))) {
-        // Store formatted string
         setNewItemValue(Number(rawValue).toLocaleString());
     }
   };
@@ -59,12 +55,10 @@ const NetWorthSnapshot: React.FC<NetWorthSnapshotProps> = ({ items, setItems, is
     { name: 'Total Liabilities', value: stats.totalLiabilities },
   ];
 
-  if (isHidden) return null;
-
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6 max-w-6xl mx-auto w-full animate-in fade-in duration-300">
       <div className="space-y-6">
-        <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+        <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm no-print">
           <h3 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><Plus className="w-4 h-4"/> Add Asset or Liability</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
             <input 
@@ -98,12 +92,12 @@ const NetWorthSnapshot: React.FC<NetWorthSnapshotProps> = ({ items, setItems, is
           </button>
         </div>
 
-        <div className="space-y-2 max-h-[400px] overflow-y-auto">
+        <div className="space-y-2 max-h-[400px] overflow-y-auto print:max-h-none print:overflow-visible">
           {items.map((item) => (
-            <div key={item.id} className="flex justify-between items-center p-3 bg-white border border-slate-100 rounded-md shadow-sm">
+            <div key={item.id} className="flex justify-between items-center p-3 bg-white border border-slate-100 rounded-md shadow-sm print:border-slate-300 print:shadow-none">
               <div>
                 <div className="font-medium text-slate-800">{item.name}</div>
-                <div className={`text-xs uppercase tracking-wider font-bold ${item.type === 'asset' ? 'text-green-600' : 'text-red-600'}`}>
+                <div className={`text-xs uppercase tracking-wider font-bold ${item.type === 'asset' ? 'text-green-600 print:text-black' : 'text-red-600 print:text-black'}`}>
                   {item.type}
                 </div>
               </div>
@@ -111,7 +105,7 @@ const NetWorthSnapshot: React.FC<NetWorthSnapshotProps> = ({ items, setItems, is
                 <span className="font-mono font-medium">
                   {item.type === 'liability' && '-'}${item.value.toLocaleString()}
                 </span>
-                <button onClick={() => removeItem(item.id)} className="text-slate-400 hover:text-red-500">
+                <button onClick={() => removeItem(item.id)} className="text-slate-400 hover:text-red-500 no-print">
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
@@ -120,7 +114,7 @@ const NetWorthSnapshot: React.FC<NetWorthSnapshotProps> = ({ items, setItems, is
         </div>
       </div>
 
-      <div className="flex flex-col items-center justify-center bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
+      <div className="flex flex-col items-center justify-center bg-white rounded-xl p-6 border border-slate-200 shadow-sm print:shadow-none print:border-none">
         <div className="w-full h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>

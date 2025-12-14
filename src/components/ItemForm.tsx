@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AssetCategory, LiabilityCategory } from '../types';
+import { ASSET_CATEGORIES, LIABILITY_CATEGORIES } from '../types';
 import type { FinancialItem, ItemType } from '../types';
 import { PlusCircle, X } from 'lucide-react';
 
@@ -14,7 +14,7 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onAdd, onClose, type }) => {
   const [amount, setAmount] = useState('');
   const [rate, setRate] = useState('');
   const [category, setCategory] = useState<string>(
-    type === 'asset' ? AssetCategory.RealEstate : LiabilityCategory.Mortgage
+    type === 'asset' ? ASSET_CATEGORIES.RealEstate : LIABILITY_CATEGORIES.Mortgage
   );
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -86,8 +86,8 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onAdd, onClose, type }) => {
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
               >
                 {type === 'asset' 
-                  ? Object.values(AssetCategory).map((c: string) => <option key={c} value={c}>{c}</option>)
-                  : Object.values(LiabilityCategory).map((c: string) => <option key={c} value={c}>{c}</option>)
+                  ? Object.values(ASSET_CATEGORIES).map((c: string) => <option key={c} value={c}>{c}</option>)
+                  : Object.values(LIABILITY_CATEGORIES).map((c: string) => <option key={c} value={c}>{c}</option>)
                 }
               </select>
             </div>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FinancialItem, AppSettings } from '../types';
+import type { FinancialItem, AppSettings } from '../types';
 import { generateFinancialAdvice } from '../services/geminiService';
 import { Sparkles, Loader2, FileText } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
