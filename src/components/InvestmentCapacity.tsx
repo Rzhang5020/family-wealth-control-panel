@@ -151,7 +151,7 @@ const InvestmentCapacity: React.FC<InvestmentCapacityProps> = ({ isHidden, onApp
             <div>
                 <h3 className="font-bold text-blue-900">How much can you actually invest?</h3>
                 <p className="text-sm text-blue-800">
-                    Use this worksheet to find your "Safe Number"—the amount you can invest without blowing up your life when the car breaks down or the roof leaks.
+                    Use this worksheet to find your "Safe Number." The amount you can invest without blowing up your life when the car breaks down or the roof leaks.
                 </p>
             </div>
         </div>
