@@ -18,7 +18,18 @@ const NetWorthForecast: React.FC<NetWorthForecastProps> = ({
     onSettingsChange
 }) => {
   const [activePhaseTab, setActivePhaseTab] = useState<1 | 2 | 3>(1);
-  const [localActuals, setLocalActuals] = useState<Record<number, string>>({});
+  
+  // Persistent Local Actuals (Graph Overrides)
+  const [localActuals, setLocalActuals] = useState<Record<number, string>>(() => {
+    try {
+        const saved = localStorage.getItem('fwcp_forecast_overrides');
+        return saved ? JSON.parse(saved) : {};
+    } catch { return {}; }
+  });
+
+  useEffect(() => {
+    localStorage.setItem('fwcp_forecast_overrides', JSON.stringify(localActuals));
+  }, [localActuals]);
 
   const { phase1Monthly, phase2Monthly, phase3Monthly, annualReturn, startYear, customStages, customReturns } = settings;
 
@@ -46,7 +57,7 @@ const NetWorthForecast: React.FC<NetWorthForecastProps> = ({
   };
 
   const updateReturnForYear = (yearIndex: number, rate: string) => {
-    // Fix: If input is cleared, remove the override instead of forcing the default value.
+    // If input is cleared, remove the override
     if (rate === '') {
         const newReturns = { ...settings.customReturns };
         delete newReturns[yearIndex];

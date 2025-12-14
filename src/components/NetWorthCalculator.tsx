@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import type { NetWorthItem, ForecastSettings, ActualRecord } from '../types';
-import { TrendingUp, PieChart, BarChart3, Wallet, Activity } from 'lucide-react';
+import { TrendingUp, PieChart, BarChart3, Wallet, Activity, Trash2 } from 'lucide-react';
 import NetWorthSnapshot from './NetWorthSnapshot';
 import NetWorthForecast from './NetWorthForecast';
 import InvestmentCapacity from './InvestmentCapacity';
@@ -9,17 +9,16 @@ import ActualOutlook from './ActualOutlook';
 const NetWorthCalculator: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'snapshot' | 'capacity' | 'dashboard' | 'outlook'>('snapshot');
   
-  // State lifted to Parent so we can pass Net Worth total to Forecast
-  const [items, setItems] = useState<NetWorthItem[]>([
+  // --- INITIAL DATA (DEFAULTS) ---
+  const defaultItems: NetWorthItem[] = [
     { id: '1', name: 'Primary Home Value', value: 450000, type: 'asset' },
     { id: '2', name: 'Retirement (401k/IRA)', value: 120000, type: 'asset' },
     { id: '3', name: 'Cash/Savings', value: 25000, type: 'asset' },
     { id: '4', name: 'Mortgage', value: 380000, type: 'liability' },
     { id: '5', name: 'Car Loan', value: 15000, type: 'liability' },
-  ]);
+  ];
 
-  // Forecast Settings (Shared between Tab 3 and Tab 4)
-  const [forecastSettings, setForecastSettings] = useState<ForecastSettings>({
+  const defaultSettings: ForecastSettings = {
     startYear: 2026,
     phase1Monthly: 3000,
     phase2Monthly: 1500,
@@ -27,16 +26,96 @@ const NetWorthCalculator: React.FC = () => {
     annualReturn: 8,
     customStages: {},
     customReturns: {}
+  };
+
+  // --- PERSISTENT STATE INITIALIZATION ---
+
+  // 1. Snapshot Items with Auto-Load
+  const [items, setItems] = useState<NetWorthItem[]>(() => {
+    try {
+      const saved = localStorage.getItem('fwcp_snapshot_items');
+      return saved ? JSON.parse(saved) : defaultItems;
+    } catch (e) {
+      console.error("Failed to load snapshot items", e);
+      return defaultItems;
+    }
   });
 
-  // Actuals Data (For Tab 4)
-  const [actuals, setActuals] = useState<ActualRecord[]>([]);
+  // 2. Forecast Settings with Auto-Load
+  const [forecastSettings, setForecastSettings] = useState<ForecastSettings>(() => {
+    try {
+      const saved = localStorage.getItem('fwcp_forecast_settings');
+      return saved ? { ...defaultSettings, ...JSON.parse(saved) } : defaultSettings;
+    } catch (e) {
+      return defaultSettings;
+    }
+  });
 
-  // Track projected value from child component
+  // 3. Actuals Records with Auto-Load
+  const [actuals, setActuals] = useState<ActualRecord[]>(() => {
+    try {
+      const saved = localStorage.getItem('fwcp_actuals');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+
+  // 4. Imported Capacity with Auto-Load
+  const [importedCapacity, setImportedCapacity] = useState<number | null>(() => {
+     try {
+       const saved = localStorage.getItem('fwcp_imported_capacity');
+       return saved ? JSON.parse(saved) : null;
+     } catch(e) {
+       return null;
+     }
+  });
+
+  // --- AUTO-SAVE EFFECTS ---
+  useEffect(() => {
+    localStorage.setItem('fwcp_snapshot_items', JSON.stringify(items));
+  }, [items]);
+
+  useEffect(() => {
+    localStorage.setItem('fwcp_forecast_settings', JSON.stringify(forecastSettings));
+  }, [forecastSettings]);
+
+  useEffect(() => {
+    localStorage.setItem('fwcp_actuals', JSON.stringify(actuals));
+  }, [actuals]);
+
+  useEffect(() => {
+     if (importedCapacity !== null) {
+        localStorage.setItem('fwcp_imported_capacity', JSON.stringify(importedCapacity));
+     }
+  }, [importedCapacity]);
+
+  // --- RESET HANDLER ---
+  const handleResetData = () => {
+    if (window.confirm('⚠️ Are you sure you want to RESET everything?\n\nThis will delete all your saved assets, liabilities, budget data, and forecast settings. This cannot be undone.')) {
+        // Clear Parent State Keys
+        localStorage.removeItem('fwcp_snapshot_items');
+        localStorage.removeItem('fwcp_forecast_settings');
+        localStorage.removeItem('fwcp_actuals');
+        localStorage.removeItem('fwcp_imported_capacity');
+        
+        // Clear Child Component Keys (Capacity Worksheet)
+        localStorage.removeItem('fwcp_cap_income');
+        localStorage.removeItem('fwcp_cap_fixed');
+        localStorage.removeItem('fwcp_cap_variable');
+        localStorage.removeItem('fwcp_cap_hell');
+        localStorage.removeItem('fwcp_cap_stretch');
+        
+        // Clear Child Component Keys (Forecast Overrides)
+        localStorage.removeItem('fwcp_forecast_overrides');
+        
+        // Reload page to reset state to defaults
+        window.location.reload();
+    }
+  };
+
+  // Track projected value from child component (Visual only, doesn't need persistence)
   const [projectedYear15, setProjectedYear15] = useState(0);
-
-  // State to hold the calculated capacity from the middle tab
-  const [importedCapacity, setImportedCapacity] = useState<number | null>(null);
 
   const stats = useMemo(() => {
     const totalAssets = items.filter(i => i.type === 'asset').reduce((acc, curr) => acc + curr.value, 0);
@@ -47,7 +126,6 @@ const NetWorthCalculator: React.FC = () => {
 
   const handleCapacityTransfer = (amount: number) => {
     setImportedCapacity(amount);
-    // Update the Phase 1 setting automatically if coming from Capacity tab
     setForecastSettings(prev => ({ ...prev, phase1Monthly: amount }));
     setActiveTab('dashboard');
   };
@@ -67,16 +145,8 @@ const NetWorthCalculator: React.FC = () => {
           body { background: white; -webkit-print-color-adjust: exact; }
           .no-print { display: none !important; }
           .print-break-after { page-break-after: always; }
-          /* Ensure all charts and inputs print clearly */
           input { border: none !important; padding: 0 !important; }
         }
-
-        /* 
-           ROBUST VISIBILITY STRATEGY: 
-           We hide non-active tabs ONLY on screen. 
-           This means when printing, the browser ignores 'screen-hidden', 
-           so ALL tabs are visible to the printer.
-        */
         @media screen {
           .screen-hidden {
             display: none !important;
@@ -84,19 +154,31 @@ const NetWorthCalculator: React.FC = () => {
         }
       `}</style>
 
-      {/* Header Area - Hidden in Print */}
+      {/* Header Area */}
       <div className="bg-slate-900 p-6 no-print">
-        <div className="mb-6 text-center md:text-left">
-            <h2 className="text-2xl font-serif font-bold text-white flex items-center justify-center md:justify-start gap-2">
-            <TrendingUp className="w-7 h-7 text-emerald-400" />
-            Family Wealth Control Panel™
-            </h2>
-            <p className="text-slate-400 text-sm mt-1 ml-1">
-             Clarity for real-life money decisions
-            </p>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+            <div className="text-center md:text-left mb-4 md:mb-0">
+                <h2 className="text-2xl font-serif font-bold text-white flex items-center justify-center md:justify-start gap-2">
+                <TrendingUp className="w-7 h-7 text-emerald-400" />
+                Family Wealth Control Panel™
+                </h2>
+                <p className="text-slate-400 text-sm mt-1 ml-1">
+                 Clarity for real-life money decisions
+                </p>
+            </div>
+            
+            {/* RESET BUTTON */}
+            <button 
+                onClick={handleResetData}
+                className="group flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 hover:bg-rose-900/30 hover:border-rose-700 transition-all"
+                title="Delete all data and start over"
+            >
+                <Trash2 className="w-4 h-4 text-slate-400 group-hover:text-rose-400" /> 
+                <span className="text-xs font-bold text-slate-400 group-hover:text-rose-400">RESET DATA</span>
+            </button>
         </div>
         
-        {/* Tabs */}
+        {/* Navigation Tabs */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 bg-slate-800/50 p-2 rounded-xl">
             <button 
                 onClick={() => setActiveTab('snapshot')}
@@ -129,12 +211,13 @@ const NetWorthCalculator: React.FC = () => {
         </div>
       </div>
 
-      {/* Printable Title for PDF */}
+      {/* Printable Report Header */}
       <div className="hidden print:block p-6 text-center border-b-2 border-slate-900 mb-4">
         <h1 className="text-3xl font-serif font-bold text-slate-900">Family Wealth Control Panel™ Report</h1>
         <p className="text-slate-500 text-sm">Generated on {new Date().toLocaleDateString()}</p>
       </div>
 
+      {/* Summary Banner */}
       <div className="p-6 bg-slate-50 border-b border-slate-200 print:bg-white print:border-none print:p-0 print:mb-6">
          <div className="flex justify-between items-center max-w-4xl mx-auto print:max-w-none">
              <div>
@@ -154,12 +237,7 @@ const NetWorthCalculator: React.FC = () => {
          </div>
       </div>
 
-      {/* 
-         COMPONENT RENDERING:
-         All components are rendered. 
-         Active one uses empty string class (visible).
-         Inactive ones use 'screen-hidden' (hidden on screen, visible in print).
-      */}
+      {/* Tab Contents */}
       
       <div className={`w-full ${activeTab === 'snapshot' ? '' : 'screen-hidden'} print:break-after`}>
         <div className="hidden print:block font-bold text-xl text-slate-900 mb-4 px-6 pt-4 border-b border-slate-200">1. Net Worth Snapshot</div>
