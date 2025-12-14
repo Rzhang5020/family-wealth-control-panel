@@ -46,13 +46,24 @@ const NetWorthForecast: React.FC<NetWorthForecastProps> = ({
   };
 
   const updateReturnForYear = (yearIndex: number, rate: string) => {
-    const val = rate === '' ? '' : parseFloat(rate);
-    if (val === '' || !isNaN(val)) {
+    // Fix: If input is cleared, remove the override instead of forcing the default value.
+    if (rate === '') {
+        const newReturns = { ...settings.customReturns };
+        delete newReturns[yearIndex];
+        onSettingsChange({
+            ...settings,
+            customReturns: newReturns
+        });
+        return;
+    }
+
+    const val = parseFloat(rate);
+    if (!isNaN(val)) {
         onSettingsChange({
             ...settings,
             customReturns: {
                 ...settings.customReturns,
-                [yearIndex]: val === '' ? (annualReturn as number) : val
+                [yearIndex]: val
             }
         });
     }
@@ -301,9 +312,10 @@ const NetWorthForecast: React.FC<NetWorthForecastProps> = ({
                                 <div className="relative w-20">
                                     <input 
                                         type="number" 
-                                        value={customReturns[row.yearNum] !== undefined ? customReturns[row.yearNum] : annualReturn}
+                                        value={customReturns[row.yearNum] !== undefined ? customReturns[row.yearNum] : ''}
+                                        placeholder={annualReturn !== '' ? annualReturn.toString() : '0'}
                                         onChange={(e) => updateReturnForYear(row.yearNum, e.target.value)}
-                                        className="w-full pl-2 pr-6 py-1 border border-yellow-200 rounded text-xs font-bold text-center focus:ring-2 focus:ring-yellow-400 outline-none bg-white print:border-none print:px-0 print:text-left"
+                                        className="w-full pl-2 pr-6 py-1 border border-yellow-200 rounded text-xs font-bold text-center focus:ring-2 focus:ring-yellow-400 outline-none bg-white print:border-none print:px-0 print:text-left placeholder:text-slate-400 placeholder:font-normal"
                                     />
                                     <span className="absolute right-2 top-1.5 text-slate-400 text-xs no-print">%</span>
                                 </div>
