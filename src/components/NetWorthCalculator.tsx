@@ -30,18 +30,15 @@ const NetWorthCalculator: React.FC = () => {
 
   // --- PERSISTENT STATE INITIALIZATION ---
 
-  // 1. Snapshot Items with Auto-Load
   const [items, setItems] = useState<NetWorthItem[]>(() => {
     try {
       const saved = localStorage.getItem('fwcp_snapshot_items');
       return saved ? JSON.parse(saved) : defaultItems;
     } catch (e) {
-      console.error("Failed to load snapshot items", e);
       return defaultItems;
     }
   });
 
-  // 2. Forecast Settings with Auto-Load
   const [forecastSettings, setForecastSettings] = useState<ForecastSettings>(() => {
     try {
       const saved = localStorage.getItem('fwcp_forecast_settings');
@@ -51,7 +48,6 @@ const NetWorthCalculator: React.FC = () => {
     }
   });
 
-  // 3. Actuals Records with Auto-Load
   const [actuals, setActuals] = useState<ActualRecord[]>(() => {
     try {
       const saved = localStorage.getItem('fwcp_actuals');
@@ -61,7 +57,6 @@ const NetWorthCalculator: React.FC = () => {
     }
   });
 
-  // 4. Imported Capacity with Auto-Load
   const [importedCapacity, setImportedCapacity] = useState<number | null>(() => {
      try {
        const saved = localStorage.getItem('fwcp_imported_capacity');
@@ -92,29 +87,21 @@ const NetWorthCalculator: React.FC = () => {
 
   // --- RESET HANDLER ---
   const handleResetData = () => {
-    if (window.confirm('⚠️ Are you sure you want to RESET everything?\n\nThis will delete all your saved assets, liabilities, budget data, and forecast settings. This cannot be undone.')) {
-        // Clear Parent State Keys
+    if (window.confirm('⚠️ Are you sure you want to RESET everything?')) {
         localStorage.removeItem('fwcp_snapshot_items');
         localStorage.removeItem('fwcp_forecast_settings');
         localStorage.removeItem('fwcp_actuals');
         localStorage.removeItem('fwcp_imported_capacity');
-        
-        // Clear Child Component Keys (Capacity Worksheet)
         localStorage.removeItem('fwcp_cap_income');
         localStorage.removeItem('fwcp_cap_fixed');
         localStorage.removeItem('fwcp_cap_variable');
         localStorage.removeItem('fwcp_cap_hell');
         localStorage.removeItem('fwcp_cap_stretch');
-        
-        // Clear Child Component Keys (Forecast Overrides)
         localStorage.removeItem('fwcp_forecast_overrides');
-        
-        // Reload page to reset state to defaults
         window.location.reload();
     }
   };
 
-  // Track projected value from child component (Visual only, doesn't need persistence)
   const [projectedYear15, setProjectedYear15] = useState(0);
 
   const stats = useMemo(() => {
@@ -138,7 +125,7 @@ const NetWorthCalculator: React.FC = () => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden min-h-[600px] flex flex-col print:shadow-none print:border-none print:overflow-visible print:h-auto">
+    <div className="bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden min-h-[600px] flex flex-col print:shadow-none print:border-none print:overflow-visible print:h-auto">
       <style>{`
         @media print {
           @page { margin: 0.5in; size: landscape; }
@@ -148,62 +135,59 @@ const NetWorthCalculator: React.FC = () => {
           input { border: none !important; padding: 0 !important; }
         }
         @media screen {
-          .screen-hidden {
-            display: none !important;
-          }
+          .screen-hidden { display: none !important; }
         }
       `}</style>
 
       {/* Header Area */}
-      <div className="bg-slate-900 p-6 no-print">
+      <div className="bg-playbookBlue p-6 no-print">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
             <div className="text-center md:text-left mb-4 md:mb-0">
                 <h2 className="text-2xl font-serif font-bold text-white flex items-center justify-center md:justify-start gap-2">
-                <TrendingUp className="w-7 h-7 text-emerald-400" />
+                <TrendingUp className="w-7 h-7 text-playbookGold" />
                 Family Wealth Control Panel™
                 </h2>
-                <p className="text-slate-400 text-sm mt-1 ml-1">
-                 Clarity for real-life money decisions
+                <p className="text-slate-300 text-sm mt-1 ml-1">
+                 Institutional-grade financial clarity
                 </p>
             </div>
             
-            {/* RESET BUTTON */}
             <button 
                 onClick={handleResetData}
-                className="group flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 hover:bg-rose-900/30 hover:border-rose-700 transition-all"
+                className="group flex items-center gap-2 px-4 py-2 rounded-lg bg-playbookBlue border border-playbookGold hover:bg-playbookGold hover:text-playbookBlue transition-all"
                 title="Delete all data and start over"
             >
-                <Trash2 className="w-4 h-4 text-slate-400 group-hover:text-rose-400" /> 
-                <span className="text-xs font-bold text-slate-400 group-hover:text-rose-400">RESET DATA</span>
+                <Trash2 className="w-4 h-4 text-playbookGold group-hover:text-playbookBlue" /> 
+                <span className="text-xs font-bold text-playbookGold group-hover:text-playbookBlue">RESET DATA</span>
             </button>
         </div>
         
         {/* Navigation Tabs */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 bg-slate-800/50 p-2 rounded-xl">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 bg-black/20 p-2 rounded-xl">
             <button 
                 onClick={() => setActiveTab('snapshot')}
-                className={`px-2 py-3 rounded-lg text-sm font-medium transition flex flex-col items-center justify-center text-center gap-1 h-full ${activeTab === 'snapshot' ? 'bg-emerald-600 text-white shadow-lg ring-1 ring-emerald-500' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
+                className={`px-2 py-3 rounded-lg text-sm font-bold transition flex flex-col items-center justify-center text-center gap-1 h-full ${activeTab === 'snapshot' ? 'bg-playbookGold text-playbookBlue shadow-lg' : 'text-slate-300 hover:text-white hover:bg-white/10'}`}
             >
                 <PieChart className="w-4 h-4 shrink-0" />
                 <span className="leading-tight">1. Net Worth Snapshot</span>
             </button>
             <button 
                 onClick={() => setActiveTab('capacity')}
-                className={`px-2 py-3 rounded-lg text-sm font-medium transition flex flex-col items-center justify-center text-center gap-1 h-full ${activeTab === 'capacity' ? 'bg-emerald-600 text-white shadow-lg ring-1 ring-emerald-500' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
+                className={`px-2 py-3 rounded-lg text-sm font-bold transition flex flex-col items-center justify-center text-center gap-1 h-full ${activeTab === 'capacity' ? 'bg-playbookGold text-playbookBlue shadow-lg' : 'text-slate-300 hover:text-white hover:bg-white/10'}`}
             >
                 <Wallet className="w-4 h-4 shrink-0" />
                 <span className="leading-tight">2. Investment Capacity</span>
             </button>
             <button 
                 onClick={() => setActiveTab('dashboard')}
-                className={`px-2 py-3 rounded-lg text-sm font-medium transition flex flex-col items-center justify-center text-center gap-1 h-full ${activeTab === 'dashboard' ? 'bg-emerald-600 text-white shadow-lg ring-1 ring-emerald-500' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
+                className={`px-2 py-3 rounded-lg text-sm font-bold transition flex flex-col items-center justify-center text-center gap-1 h-full ${activeTab === 'dashboard' ? 'bg-playbookGold text-playbookBlue shadow-lg' : 'text-slate-300 hover:text-white hover:bg-white/10'}`}
             >
                 <BarChart3 className="w-4 h-4 shrink-0" />
                 <span className="leading-tight">3. Wealth Trajectory</span>
             </button>
             <button 
                 onClick={() => setActiveTab('outlook')}
-                className={`px-2 py-3 rounded-lg text-sm font-medium transition flex flex-col items-center justify-center text-center gap-1 h-full ${activeTab === 'outlook' ? 'bg-emerald-600 text-white shadow-lg ring-1 ring-emerald-500' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
+                className={`px-2 py-3 rounded-lg text-sm font-bold transition flex flex-col items-center justify-center text-center gap-1 h-full ${activeTab === 'outlook' ? 'bg-playbookGold text-playbookBlue shadow-lg' : 'text-slate-300 hover:text-white hover:bg-white/10'}`}
             >
                 <Activity className="w-4 h-4 shrink-0" />
                 <span className="leading-tight">4. Actuals & Outlook</span>
@@ -211,25 +195,19 @@ const NetWorthCalculator: React.FC = () => {
         </div>
       </div>
 
-      {/* Printable Report Header */}
-      <div className="hidden print:block p-6 text-center border-b-2 border-slate-900 mb-4">
-        <h1 className="text-3xl font-serif font-bold text-slate-900">Family Wealth Control Panel™ Report</h1>
-        <p className="text-slate-500 text-sm">Generated on {new Date().toLocaleDateString()}</p>
-      </div>
-
       {/* Summary Banner */}
       <div className="p-6 bg-slate-50 border-b border-slate-200 print:bg-white print:border-none print:p-0 print:mb-6">
          <div className="flex justify-between items-center max-w-4xl mx-auto print:max-w-none">
              <div>
-                 <div className="text-xs text-slate-500 uppercase font-bold tracking-wider">Current Net Worth (Time Zero)</div>
-                 <div className={`text-3xl md:text-4xl font-serif font-bold ${stats.netWorth >= 0 ? 'text-slate-900' : 'text-red-600'}`}>
+                 <div className="text-xs text-playbookBlue uppercase font-bold tracking-wider opacity-60">Current Net Worth (Time Zero)</div>
+                 <div className={`text-3xl md:text-4xl font-serif font-bold ${stats.netWorth >= 0 ? 'text-playbookBlue' : 'text-rose-600'}`}>
                     ${stats.netWorth.toLocaleString()}
                  </div>
              </div>
              {(activeTab === 'dashboard' || activeTab === 'outlook') && (
                  <div className="text-right print:block">
-                     <div className="text-xs text-slate-500 uppercase font-bold tracking-wider">Projected Year 15</div>
-                     <div className="text-3xl md:text-4xl font-serif font-bold text-emerald-600">
+                     <div className="text-xs text-playbookBlue uppercase font-bold tracking-wider opacity-60">Projected Year 15</div>
+                     <div className="text-3xl md:text-4xl font-serif font-bold text-playbookGold">
                         ${projectedYear15.toLocaleString()}
                      </div>
                  </div>
@@ -237,47 +215,33 @@ const NetWorthCalculator: React.FC = () => {
          </div>
       </div>
 
-      {/* Tab Contents */}
-      
       <div className={`w-full ${activeTab === 'snapshot' ? '' : 'screen-hidden'} print:break-after`}>
-        <div className="hidden print:block font-bold text-xl text-slate-900 mb-4 px-6 pt-4 border-b border-slate-200">1. Net Worth Snapshot</div>
         <NetWorthSnapshot 
-            items={items} 
-            setItems={setItems} 
-            isHidden={false} 
+          items={items} 
+          setItems={setItems} 
+          isHidden={false} 
+          onNext={() => setActiveTab('capacity')}
         />
       </div>
 
       <div className={`w-full ${activeTab === 'capacity' ? '' : 'screen-hidden'} print:break-after`}>
-        <div className="hidden print:block font-bold text-xl text-slate-900 mb-4 px-6 pt-4 border-b border-slate-200">2. Investment Capacity</div>
-        <InvestmentCapacity 
-            isHidden={false}
-            onApplyToForecast={handleCapacityTransfer}
-        />
+        <InvestmentCapacity isHidden={false} onApplyToForecast={handleCapacityTransfer} />
       </div>
       
       <div className={`w-full ${activeTab === 'dashboard' ? '' : 'screen-hidden'} print:break-after`}>
-        <div className="hidden print:block font-bold text-xl text-slate-900 mb-4 px-6 pt-4 border-b border-slate-200">3. Wealth Trajectory</div>
         <NetWorthForecast 
-            startingNetWorth={stats.netWorth} 
-            isHidden={false}
-            onProjectionUpdate={setProjectedYear15}
-            settings={forecastSettings}
-            onSettingsChange={setForecastSettings}
+          startingNetWorth={stats.netWorth} 
+          isHidden={false} 
+          onProjectionUpdate={setProjectedYear15} 
+          settings={forecastSettings} 
+          onSettingsChange={setForecastSettings} 
+          onNext={() => setActiveTab('outlook')}
         />
       </div>
 
       <div className={`w-full ${activeTab === 'outlook' ? '' : 'screen-hidden'}`}>
-        <div className="hidden print:block font-bold text-xl text-slate-900 mb-4 px-6 pt-4 border-b border-slate-200">4. Actuals & Outlook</div>
-        <ActualOutlook 
-            startingNetWorth={stats.netWorth}
-            settings={forecastSettings}
-            actuals={actuals}
-            onUpdateActual={handleUpdateActual}
-            isHidden={false}
-        />
+        <ActualOutlook startingNetWorth={stats.netWorth} settings={forecastSettings} actuals={actuals} onUpdateActual={handleUpdateActual} isHidden={false} />
       </div>
-
     </div>
   );
 };

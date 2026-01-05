@@ -2,10 +2,69 @@ import React, { useMemo } from 'react';
 import type { FinancialItem, AppSettings, ProjectionData } from '../types';
 import { SummaryCard } from './SummaryCard';
 import { FinancialList } from './FinancialList';
-import { ControlPanel } from './ControlPanel';
 import { AIAdvisor } from './AIAdvisor';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts';
-import { Wallet, CreditCard, TrendingUp, Plus } from 'lucide-react';
+import { Wallet, CreditCard, TrendingUp, Plus, Settings, RefreshCw } from 'lucide-react';
+
+// Local SettingsPanel component updated for color scheme
+interface SettingsPanelProps {
+  settings: AppSettings;
+  onUpdate: (settings: AppSettings) => void;
+  onReset: () => void;
+}
+
+const SettingsPanel: React.FC<SettingsPanelProps> = ({ settings, onUpdate, onReset }) => {
+  return (
+    <div className="bg-[#D4AF37] text-[#001F3F] rounded-xl p-6 shadow-lg border border-[#001F3F]/10">
+      <div className="flex items-center gap-2 mb-6 border-b border-[#001F3F]/20 pb-4">
+        <Settings className="w-5 h-5 text-[#001F3F]" />
+        <h3 className="font-bold text-lg">Control Panel</h3>
+      </div>
+
+      <div className="space-y-6">
+        <div>
+          <div className="flex justify-between mb-2">
+            <label className="text-sm font-medium text-[#001F3F]/80">Projection Period</label>
+            <span className="text-sm font-bold text-[#001F3F]">{settings.projectionYears} Years</span>
+          </div>
+          <input
+            type="range"
+            min="1"
+            max="50"
+            value={settings.projectionYears}
+            onChange={(e) => onUpdate({ ...settings, projectionYears: parseInt(e.target.value) })}
+            className="w-full h-2 bg-[#001F3F]/20 rounded-lg appearance-none cursor-pointer accent-[#001F3F]"
+          />
+        </div>
+
+        <div>
+          <div className="flex justify-between mb-2">
+            <label className="text-sm font-medium text-[#001F3F]/80">Inflation Adjustment</label>
+            <span className="text-sm font-bold text-[#001F3F]">{settings.inflationRate}%</span>
+          </div>
+          <input
+            type="range"
+            min="0"
+            max="15"
+            step="0.1"
+            value={settings.inflationRate}
+            onChange={(e) => onUpdate({ ...settings, inflationRate: parseFloat(e.target.value) })}
+            className="w-full h-2 bg-[#001F3F]/20 rounded-lg appearance-none cursor-pointer accent-[#001F3F]"
+          />
+          <p className="text-xs text-[#001F3F]/60 mt-2 font-medium">Adjusts future value for purchasing power parity.</p>
+        </div>
+
+        <button
+            onClick={onReset}
+            className="w-full mt-4 py-2 px-4 rounded-lg bg-[#001F3F] hover:bg-[#001F3F]/90 text-sm text-[#D4AF37] font-bold transition flex items-center justify-center gap-2 shadow-sm"
+        >
+            <RefreshCw className="w-4 h-4" />
+            Reset Defaults
+        </button>
+      </div>
+    </div>
+  );
+};
 
 interface DashboardProps {
   items: FinancialItem[];
@@ -40,33 +99,24 @@ export const Dashboard: React.FC<DashboardProps> = ({
         liabilities: currentLiabilities,
       });
 
-      // Simple compound growth simulation
-      // Weighted average growth rate for assets
       const weightedAssetRate = assets.length > 0 
-        ? assets.reduce((acc, item) => acc + (item.amount * item.interestRate), 0) / totalAssets
+        ? assets.reduce((acc, item) => acc + (item.amount * item.interestRate), 0) / (totalAssets || 1)
         : 0;
       
-      // Weighted average interest rate for liabilities
       const weightedLiabilityRate = liabilities.length > 0
-        ? liabilities.reduce((acc, item) => acc + (item.amount * item.interestRate), 0) / totalLiabilities
+        ? liabilities.reduce((acc, item) => acc + (item.amount * item.interestRate), 0) / (totalLiabilities || 1)
         : 0;
 
-      // Apply growth and inflation adjustment
-      // Real Rate = ((1 + Nominal) / (1 + Inflation)) - 1
       const realAssetRate = ((1 + weightedAssetRate / 100) / (1 + settings.inflationRate / 100)) - 1;
       const realLiabilityRate = ((1 + weightedLiabilityRate / 100) / (1 + settings.inflationRate / 100)) - 1;
 
       currentAssets *= (1 + realAssetRate);
       currentLiabilities *= (1 + realLiabilityRate); 
-      
-      // Assume some liabilities get paid off? For simplicity, just compound debt (worst case) or assume static paydown.
-      // Let's stick to simple compounding to show the danger of debt vs asset growth.
     }
     return data;
   }, [totalAssets, totalLiabilities, assets, liabilities, settings]);
 
   const assetAllocationData = assets.map(a => ({ name: a.category, value: a.amount }));
-  // Aggregate by category
   const aggregatedAssets = Object.values(assetAllocationData.reduce((acc: any, curr) => {
     acc[curr.name] = acc[curr.name] || { name: curr.name, value: 0 };
     acc[curr.name].value += curr.value;
@@ -78,7 +128,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
   return (
     <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
       
-      {/* Left Column: Summary & Control (1/4 width on large screens) */}
       <div className="xl:col-span-1 space-y-6">
         <div className="grid grid-cols-1 gap-4">
             <SummaryCard 
@@ -101,7 +150,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             />
         </div>
 
-        <ControlPanel settings={settings} onUpdate={onUpdateSettings} onReset={onResetSettings} />
+        <SettingsPanel settings={settings} onUpdate={onUpdateSettings} onReset={onResetSettings} />
         
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
             <h3 className="font-bold text-slate-800 mb-4">Asset Allocation</h3>
@@ -124,9 +173,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
       </div>
 
-      {/* Middle Column: Visualizations & Lists (2/4 width) */}
       <div className="xl:col-span-2 space-y-6">
-        {/* Main Chart */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
             <div className="flex justify-between items-center mb-6">
                 <div>
@@ -168,7 +215,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </div>
         </div>
 
-        {/* Lists */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
                 <button 
@@ -191,7 +237,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
       </div>
 
-      {/* Right Column: AI Advisor (1/4 width) */}
       <div className="xl:col-span-1 h-full min-h-[500px]">
         <AIAdvisor items={items} settings={settings} />
       </div>

@@ -1,14 +1,9 @@
+
 import { GoogleGenAI } from "@google/genai";
 import type { FinancialItem, AppSettings } from "../types";
 
-// Declare process to satisfy TypeScript in the browser environment
-declare const process: {
-  env: {
-    API_KEY: string;
-  };
-};
-
-// Note: Ensure your build tool injects the API key via process.env.API_KEY or import.meta.env
+// Note: Ensure your build tool injects the API key via process.env.API_KEY
+// The GoogleGenAI client must be initialized with a named parameter.
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const generateFinancialAdvice = async (
@@ -28,7 +23,7 @@ export const generateFinancialAdvice = async (
       netWorth,
       settings,
       assets: assets.map(a => ({ name: a.name, val: a.amount, cat: a.category, rate: a.interestRate })),
-      liabilities: liabilities.map(l => ({ name: l.name, val: l.amount, cat: l.category, rate: l.interestRate }))
+      liabilities: liabilities.map(l => ({ name: l.amount, val: l.amount, cat: l.category, rate: l.interestRate }))
     };
 
     const prompt = `
@@ -45,11 +40,13 @@ export const generateFinancialAdvice = async (
       Format the response in Markdown. Use bold headings and bullet points. Keep it professional but encouraging.
     `;
 
+    // Using gemini-3-flash-preview as recommended for basic text tasks.
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3-flash-preview',
       contents: prompt,
     });
 
+    // Extracting text output from GenerateContentResponse using the .text property.
     return response.text || "Unable to generate advice at this time.";
   } catch (error) {
     console.error("Error generating advice:", error);
